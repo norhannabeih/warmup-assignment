@@ -108,6 +108,21 @@ function metQuota(date, activeTime) {
 }
 
 function addShiftRecord(textFile, shiftObj) {
+
+    let data = fs.readFileSync(textFile,"utf8").trim()
+
+    let lines = data.split("\n")
+
+    // check duplicate
+    for(let line of lines){
+
+        let parts = line.split(",")
+
+        if(parts[0] == shiftObj.driverID && parts[1] == shiftObj.date){
+            return {}
+        }
+    }
+
     let duration = getShiftDuration(shiftObj.startTime,shiftObj.endTime)
     let idle = getIdleTime(shiftObj.startTime,shiftObj.endTime)
     let active = getActiveTime(duration,idle)
@@ -122,15 +137,12 @@ function addShiftRecord(textFile, shiftObj) {
         idleTime: idle,
         activeTime: active,
         metQuota: quota,
-        hasBonus: false,
-        notes: ""
+        hasBonus: false
     }
 
-    let line = Object.values(record).join(",")
+    let line = `${record.driverID},${record.date},${record.startTime},${record.endTime},${record.shiftDuration},${record.idleTime},${record.activeTime},${record.metQuota},${record.hasBonus}`
 
-    let data = fs.readFileSync(textFile,"utf8").trim()
-
-    fs.writeFileSync(textFile,data+"\n"+line)
+    fs.writeFileSync(textFile, data + "\n" + line)
 
     return record
 }
